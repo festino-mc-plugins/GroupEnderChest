@@ -1,0 +1,14 @@
+name: GroupEnderChest
+version: 1.0.0
+authors: [FEST_Channel, EvilGeniys]
+
+description: Share one ender chest with friends!
+website: https://github.com/festino-mc-plugins/
+
+main: com.festp.Main
+
+commands:
+         enderchest:
+           description: All interactions with shared enderchests. (may be need some permisions)
+           aliases: [ec]
+api-version: 1.14
