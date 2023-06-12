@@ -120,7 +120,6 @@ public class EnderChestHandler implements Listener {
 		for (int i = 0; i < opened_chests.size(); i++) {
 			Pair<Player, Block> pair = opened_chests.get(i);
 			if (pair.first == p) {
-				playOpenAnimation(pair.first, pair.second);
 				//System.out.println("Removed " + p);
 				opened_chests.remove(i);
 				break;

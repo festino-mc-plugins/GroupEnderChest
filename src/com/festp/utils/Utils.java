@@ -69,7 +69,9 @@ public class Utils {
 			Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
 			getHandleMethod.setAccessible(true);
 			Class playerConnectionClass = Class.forName("net.minecraft.server.network.PlayerConnection");
-			Field playerConnectionField = entityPlayerClass.getField("b");
+			
+			String playerConnectionFieldName = UtilsVersion.isEqualOrGreater("1.20") ? "c" : "b";
+			Field playerConnectionField = entityPlayerClass.getField(playerConnectionFieldName);
 			Class anyPacketClass = Class.forName("net.minecraft.network.protocol.Packet");
 			Method sendPacketMethod = playerConnectionClass.getMethod("a", anyPacketClass);
 			Object craftPlayer = craftPlayerClass.cast(player);
