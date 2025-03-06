@@ -2,7 +2,6 @@ package com.festp.utils;
 
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
@@ -46,37 +45,35 @@ public class Utils {
 			int actionId = 1; // Action ID, always 1 to opening chests (https://wiki.vg/Block_Actions#Chest)
 
 			// org.bukkit.craftbukkit.v1_19_R1.util.CraftMagicNumbers;
-			Class magicClass = Utils.getCraftbukkitClass("util.CraftMagicNumbers");
+			Class<?> magicClass = Utils.getCraftbukkitClass("util.CraftMagicNumbers");
 			Method getBlockMethod = magicClass.getMethod("getBlock", Material.class);
 			Object nmsBlock = getBlockMethod.invoke(null, chest.getType());
-			Class blockClass = Class.forName("net.minecraft.world.level.block.Block");
+			Class<?> blockClass = Class.forName("net.minecraft.world.level.block.Block");
 			
 			// net.minecraft.core.BlockPosition;
-			Class blockPositionClass = Class.forName("net.minecraft.core.BlockPosition");
-			Constructor blockPositionConstructor = blockPositionClass.getConstructor(int.class, int.class, int.class);
+			Class<?> blockPositionClass = Class.forName("net.minecraft.core.BlockPosition");
+			Constructor<?> blockPositionConstructor = blockPositionClass.getConstructor(int.class, int.class, int.class);
 			Object blockPosition = blockPositionConstructor.newInstance(chest.getX(), chest.getY(), chest.getZ());
 
 			// net.minecraft.network.protocol.game.PacketPlayOutBlockAction;
-			Class packetClass = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutBlockAction");
-			Constructor packetConstructor = packetClass.getConstructor(blockPositionClass, blockClass, int.class, int.class);
+			Class<?> packetClass = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutBlockAction");
+			Constructor<?> packetConstructor = packetClass.getConstructor(blockPositionClass, blockClass, int.class, int.class);
 			Object packet = packetConstructor.newInstance(blockPosition, nmsBlock, actionId, param);
 
 			// ((CraftPlayer) player).getHandle().playerConnection.sendPacket
 			// ((CraftPlayer) p).getHandle().b.a(packet);
 			// org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
-			Class craftPlayerClass = Utils.getCraftbukkitClass("entity.CraftPlayer");
-			Class entityPlayerClass = Class.forName("net.minecraft.server.level.EntityPlayer");
+			Class<?> craftPlayerClass = Utils.getCraftbukkitClass("entity.CraftPlayer");
+			Class<?> entityPlayerClass = Class.forName("net.minecraft.server.level.EntityPlayer");
 			Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
 			getHandleMethod.setAccessible(true);
-			Class playerConnectionClass = Class.forName("net.minecraft.server.network.PlayerConnection");
+			Class<?> playerConnectionClass = Class.forName("net.minecraft.server.network.PlayerConnection");
 			
-			String playerConnectionFieldName = UtilsVersion.isEqualOrGreater("1.20") ? "c" : "b";
-			Field playerConnectionField = entityPlayerClass.getField(playerConnectionFieldName);
-			Class anyPacketClass = Class.forName("net.minecraft.network.protocol.Packet");
+			Class<?> anyPacketClass = Class.forName("net.minecraft.network.protocol.Packet");
 			Method sendPacketMethod = playerConnectionClass.getMethod("a", anyPacketClass);
 			Object craftPlayer = craftPlayerClass.cast(player);
 			Object entityPlayer = entityPlayerClass.cast(getHandleMethod.invoke(craftPlayer));
-			Object playerConnection = playerConnectionField.get(entityPlayer);
+			Object playerConnection = ReflectionUtils.findAndGetField(entityPlayer, playerConnectionClass);
 			sendPacketMethod.invoke(playerConnection, packet);
 		} catch (Exception e) {
 		    e.printStackTrace(System.err);
@@ -85,7 +82,7 @@ public class Utils {
 	}
 	
 	/** Use for paths like "org.bukkit.craftbukkit.v1_19_R1". */
-	public static Class getCraftbukkitClass(String relativePath)
+	public static Class<?> getCraftbukkitClass(String relativePath)
 	{
 		String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		try {
@@ -93,12 +90,12 @@ public class Utils {
 		} catch (ClassNotFoundException e) { }
 		return null;
 	}
-	public static void printConstructors(Class clazz) {
+	public static void printConstructors(Class<?> clazz) {
 		printConstructors(clazz, System.err);
 	}
-	public static void printConstructors(Class clazz, PrintStream stream) {
+	public static void printConstructors(Class<?> clazz, PrintStream stream) {
 		stream.println("Constructors of " + clazz.getName());
-		for (Constructor c : clazz.getConstructors())
+		for (Constructor<?> c : clazz.getConstructors())
 		{
 			stream.println("  " + c.getParameters().length);
 			for (Parameter par : c.getParameters())
@@ -107,10 +104,10 @@ public class Utils {
 			}
 		}
 	}
-	public static void printMethods(Class clazz) {
+	public static void printMethods(Class<?> clazz) {
 		printMethods(clazz, System.err);
 	}
-	public static void printMethods(Class clazz, PrintStream stream) {
+	public static void printMethods(Class<?> clazz, PrintStream stream) {
 		Method[] methods = clazz.getMethods();
 		stream.println("Methods(" + methods.length + ") of " + clazz.getName());
 		Comparator<Method> comp = new Comparator<Method>() {
