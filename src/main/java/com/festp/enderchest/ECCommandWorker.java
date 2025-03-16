@@ -154,19 +154,19 @@ public class ECCommandWorker implements CommandExecutor {
 					
 			}
 			if(args.length == 0 || args[0].equals("?") || args[0].equals("help")) {
-				sender.sendMessage(ChatColor.GRAY + "Список команд: (/enderchest = /ec)");
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest create <groupname> - создать группу.");
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest delete [groupname] - удалить группу.");
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest invite <nickname> - пригласить игрока в группу.");
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest kick <nickname> - выгнать игрока из группы.");
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest accept <groupname> - принять приглашение в группу.");
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest leave [new owner nickname] - выйти из группы.");
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest info - информация о текущей группе.");
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest changeowner <nickname> - сменить владельца группы.");
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest acreate <groupname> - создать административную группу.");
+				sender.sendMessage(ChatColor.GRAY + "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: (/enderchest = /ec)");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest create <groupname> - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest delete [groupname] - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest invite <nickname> - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest kick <nickname> - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest accept <groupname> - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest leave [new owner nickname] - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest info - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest changeowner <nickname> - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest acreate <groupname> - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
 			}
 			else {
-				sender.sendMessage(ChatColor.GRAY + "   /enderchest <help или ?> - помощь по командам");
+				sender.sendMessage(ChatColor.GRAY + "   /enderchest <help пїЅпїЅпїЅ ?> - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
 			}
 		}
 		return true;
@@ -346,7 +346,7 @@ public class ECCommandWorker implements CommandExecutor {
 		p.getEnderChest().setContents(ec.getInventory().getContents());
 		//delete groups
 		g.remove(ec.getGroupName());
-		pl.ecstorage.deleteDataFile(ec.getGroupName());
+		pl.ecFileStorage.deleteDataFile(ec.getGroupName());
 		return (ChatColor.GREEN+"Group has successfully deleted.");
 	}
 	
@@ -380,7 +380,7 @@ public class ECCommandWorker implements CommandExecutor {
 				}
 				if(i<g.groups.size()) g.groups.remove(i);
 				else g.admingroups.remove(i-g.groups.size());
-				pl.ecstorage.deleteDataFile(groupname);
+				pl.ecFileStorage.deleteDataFile(groupname);
 				return (ChatColor.GREEN+"Group has successfully deleted.");
 			}
 		}

@@ -36,7 +36,7 @@ public class EnderChestHandler implements Listener {
 		ticks++;
 		if (ticks < PACKET_TICKS) {
 			return;
-		} 
+		}
 		ticks = 0;
 		for (Pair<Player, Block> pair : opened_chests) {
 			playOpenAnimation(pair.first, pair.second);

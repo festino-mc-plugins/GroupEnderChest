@@ -1,6 +1,7 @@
 package com.festp.utils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,6 +77,52 @@ public class ReflectionUtils {
     	
     	return field;
     }
+	
+	public static Method findMethod(Class<?> objClass, Class<?> returnClass, Class<?>... argClasses) {
+		Method method = null;
+    	
+		if (returnClass == null) {
+			returnClass = Void.TYPE;
+		}
+		
+    	if (method == null)
+    	{
+    		if (objClass.getSuperclass() != null) {
+    			method = findMethod(objClass.getSuperclass(), returnClass, argClasses);
+    		}
+        	for (Method m : objClass.getDeclaredMethods())
+        	{
+        		if (!m.getReturnType().equals(returnClass)) continue;
+        		
+        		Class<?>[] methodParameters = m.getParameterTypes();
+        		if (methodParameters.length != argClasses.length) continue;
+        		
+        		boolean match = true;
+        		for (int i = 0; i < argClasses.length; i++) {
+        			if (!methodParameters[i].equals(argClasses[i])) {
+        				match = false;
+        				break;
+        			}
+        		}
+        		if (!match) continue;
+        		
+    			if (method != null) // at least two such methods
+    			{
+    				//Logger.severe("ReflectionUtils: Couldn't choose between " + method.getName() + " and " + m.getName() + " in " + objClass.getCanonicalName());
+					//return null;
+    				Logger.severe("ReflectionUtils: choose " + method.getName() + " over " + m.getName() + " in " + objClass.getCanonicalName());
+    			}
+    			method = m;
+        	}
+    		if (method == null) // no methods
+    		{
+    			return null;
+    		}
+    		method.setAccessible(true);
+    	}
+    	
+    	return method;
+	}
 
 	public static void printAllFields(Class<?> clazz) {
 		Logger.severe(clazz.getName() + " has " + clazz.getDeclaredFields().length + " fields:");

@@ -19,6 +19,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public class Utils {
+	private static Class<?> PlayerConnectionClass = null;
+	private static Method sendPacketMethod = null;
+	
 	/** Can give items only to players.
 	 * @return <b>null</b> if the <b>stack</b> was only given<br>
 	 * <b>Item</b> if at least one item was dropped*/
@@ -39,22 +42,29 @@ public class Utils {
 	public static void sendPacketPlayOutBlockAction(Player player, Block chest, boolean setOpen)
 	{
 		try  {
+			if (PlayerConnectionClass == null && sendPacketMethod == null) {
+				PlayerConnectionClass = Class.forName("net.minecraft.server.network.PlayerConnection");
+				
+				Class<?> anyPacketClass = Class.forName("net.minecraft.network.protocol.Packet");
+				sendPacketMethod = ReflectionUtils.findMethod(PlayerConnectionClass, null, anyPacketClass);
+			}
+			// https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Block_Actions#Chest (former https://wiki.vg/Block_Actions#Chest)
 			int param = 0; // Action param, number of players (0 to close)
 			if (setOpen) // Action param, number of players (> 0 to open)
 				param = 1;
-			int actionId = 1; // Action ID, always 1 to opening chests (https://wiki.vg/Block_Actions#Chest)
+			int actionId = 1; // Action ID, always 1 to opening chests
 
 			// org.bukkit.craftbukkit.v1_19_R1.util.CraftMagicNumbers;
 			Class<?> magicClass = Utils.getCraftbukkitClass("util.CraftMagicNumbers");
 			Method getBlockMethod = magicClass.getMethod("getBlock", Material.class);
 			Object nmsBlock = getBlockMethod.invoke(null, chest.getType());
-			Class<?> blockClass = Class.forName("net.minecraft.world.level.block.Block");
 			
 			// net.minecraft.core.BlockPosition;
 			Class<?> blockPositionClass = Class.forName("net.minecraft.core.BlockPosition");
 			Constructor<?> blockPositionConstructor = blockPositionClass.getConstructor(int.class, int.class, int.class);
 			Object blockPosition = blockPositionConstructor.newInstance(chest.getX(), chest.getY(), chest.getZ());
 
+			Class<?> blockClass = Class.forName("net.minecraft.world.level.block.Block");
 			// net.minecraft.network.protocol.game.PacketPlayOutBlockAction;
 			Class<?> packetClass = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutBlockAction");
 			Constructor<?> packetConstructor = packetClass.getConstructor(blockPositionClass, blockClass, int.class, int.class);
@@ -67,17 +77,18 @@ public class Utils {
 			Class<?> entityPlayerClass = Class.forName("net.minecraft.server.level.EntityPlayer");
 			Method getHandleMethod = craftPlayerClass.getMethod("getHandle");
 			getHandleMethod.setAccessible(true);
-			Class<?> playerConnectionClass = Class.forName("net.minecraft.server.network.PlayerConnection");
 			
-			Class<?> anyPacketClass = Class.forName("net.minecraft.network.protocol.Packet");
-			Method sendPacketMethod = playerConnectionClass.getMethod("a", anyPacketClass);
 			Object craftPlayer = craftPlayerClass.cast(player);
 			Object entityPlayer = entityPlayerClass.cast(getHandleMethod.invoke(craftPlayer));
-			Object playerConnection = ReflectionUtils.findAndGetField(entityPlayer, playerConnectionClass);
+			Object playerConnection = ReflectionUtils.findAndGetField(entityPlayer, PlayerConnectionClass);
 			sendPacketMethod.invoke(playerConnection, packet);
+			
 		} catch (Exception e) {
 		    e.printStackTrace(System.err);
-			player.sendMessage(ChatColor.RED + "Reflection error in \"" + Utils.class.getName() + ".sendPacketPlayOutBlockAction\". Please the contact administration.");
+		    if (player.isOp()) {
+				player.sendMessage(ChatColor.RED + "Reflection error in \"" + Utils.class.getName() + ".sendPacketPlayOutBlockAction\".");
+				player.sendMessage(ChatColor.RED + e.toString());
+		    }
 		}
 	}
 	

@@ -26,9 +26,9 @@ public class Main extends JavaPlugin implements Listener
 
 	public List<AdminChannelPlayer> admin_ecplayers = new ArrayList<>();
 	public EnderChestGroup ecgroup = new EnderChestGroup(this);
-	public EnderFileStorage ecstorage;
-	private int groupticks = 0;
-	private int maxgroupticks = 3*60*20; //3 minutes
+	public EnderFileStorage ecFileStorage;
+	private int saveTicks = 0;
+	private int maxSaveTicks = 3*60*20; //3 minutes
 	
 	public static String getPath() {
 		return PATH;
@@ -45,32 +45,33 @@ public class Main extends JavaPlugin implements Listener
 		conf = new Config(this);
 		Config.loadConfig();
 		
-    	File ECpluginFolder = new File(PATH + enderdir);
-		if (ECpluginFolder.exists() == false) {
-    		ECpluginFolder.mkdir();
+    	File ecPluginFolder = new File(PATH + enderdir);
+		if (ecPluginFolder.exists() == false) {
+    		ecPluginFolder.mkdir();
     	}
-		ecstorage = new EnderFileStorage(this);
+		ecFileStorage = new EnderFileStorage(this);
     	
-    	EnderChestHandler ecH = new EnderChestHandler(this);
-    	pm.registerEvents(ecH, this);
+    	EnderChestHandler ecHandler = new EnderChestHandler(this);
+    	pm.registerEvents(ecHandler, this);
     	
-    	ECCommandWorker ecCW = new ECCommandWorker(this);
-    	getCommand("enderchest").setExecutor(ecCW);
-    	getCommand("ec").setExecutor(ecCW);
+    	ECCommandWorker ecCommandWorker = new ECCommandWorker(this);
+    	getCommand("enderchest").setExecutor(ecCommandWorker);
+    	getCommand("ec").setExecutor(ecCommandWorker);
     	
-    	ECTabCompleter ectc = new ECTabCompleter(this);
-    	getCommand("enderchest").setTabCompleter(ectc);
-    	getCommand("ec").setTabCompleter(ectc);
-    	ecgroup.loadEnderChests(ecstorage, ECpluginFolder);
+    	ECTabCompleter ecTabCompleter = new ECTabCompleter(this);
+    	getCommand("enderchest").setTabCompleter(ecTabCompleter);
+    	getCommand("ec").setTabCompleter(ecTabCompleter);
+    	ecgroup.loadEnderChests(ecFileStorage, ecPluginFolder);
 
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(this,
 			new Runnable() {
 				public void run() {
-					groupticks++;
-					if(groupticks >= maxgroupticks) {
-						ecgroup.saveEnderChests(ecstorage);
-						groupticks = 0;
+					saveTicks++;
+					if (saveTicks >= maxSaveTicks) {
+						ecgroup.saveEnderChests(ecFileStorage);
+						saveTicks = 0;
 					}
+					ecHandler.tick();
 				}
 			}, 0L, 1L);
 		
@@ -78,6 +79,6 @@ public class Main extends JavaPlugin implements Listener
 	
 	public void onDisable()
 	{
-		ecgroup.saveEnderChests(ecstorage);
+		ecgroup.saveEnderChests(ecFileStorage);
 	}
 }

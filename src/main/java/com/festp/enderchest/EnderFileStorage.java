@@ -86,7 +86,7 @@ public class EnderFileStorage {
 			pl.ecgroup.groups.add(ec);
 		}
 		Inventory inv = pl.getServer().createInventory(null, InventoryType.ENDER_CHEST, groupname);
-		ItemLoadResult res = ItemFileManager.loadEC(ymlFormat);
+		ItemLoadResult res = ItemFileManager.load(ymlFormat);
 		if (res.invalid)
 			ItemFileManager.backup(dataFile);
 		inv.setContents(res.contents);
