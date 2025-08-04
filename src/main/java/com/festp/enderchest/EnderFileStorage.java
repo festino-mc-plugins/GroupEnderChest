@@ -30,8 +30,8 @@ public class EnderFileStorage {
 
 	public boolean saveEnderChest(EnderChest ec) {
 		String groupName = ec.getGroupName();
+		File dataFile = getFile(groupName);
 		try {
-			File dataFile = getFile(groupName);
 			FileConfiguration ymlFormat = YamlConfiguration.loadConfiguration(dataFile);
 
 			Inventory inv = ec.getInventory();
@@ -56,8 +56,9 @@ public class EnderFileStorage {
 			ymlFormat.save(dataFile);
 			return true;
 		} catch (Exception e) {
-			pl.getLogger().severe("["+pl.getName()+"] Could not save inventory of "+ groupName +"!");
+			pl.getLogger().severe("["+pl.getName()+"] Could not save "+ groupName +"!");
 			e.printStackTrace();
+			ItemFileManager.backup(dataFile);
 		}
 		return false;
 	}
@@ -65,33 +66,40 @@ public class EnderFileStorage {
 	public boolean loadEnderChest(String groupname){
 		File dataFile = getFile(groupname);
 		ItemFileManager.backupIfUpdateVersion(dataFile);
-		FileConfiguration ymlFormat = YamlConfiguration.loadConfiguration(dataFile);
-		//System.out.println(dataFile.getAbsolutePath());
-		boolean admingroup = ymlFormat.getBoolean("admin", false);
-		EnderChest ec;
-		if(admingroup) {
-			ec = new EnderChest(groupname);
-			pl.ecgroup.admingroups.add(ec);
-		} else {
-			String owner = ymlFormat.getString("owner");
-			ec = new EnderChest(groupname, owner, false);
-			String[] ingroup = ymlFormat.getString("ecgroup") != null ? ymlFormat.getString("ecgroup").split(",") : new String[0];
-			for (int i = 0; i < ingroup.length; i++) {
-				ec.group.add(ingroup[i]);
+		try {
+			FileConfiguration ymlFormat = YamlConfiguration.loadConfiguration(dataFile);
+			//System.out.println(dataFile.getAbsolutePath());
+			boolean admingroup = ymlFormat.getBoolean("admin", false);
+			EnderChest ec;
+			if(admingroup) {
+				ec = new EnderChest(groupname);
+				pl.ecgroup.admingroups.add(ec);
+			} else {
+				String owner = ymlFormat.getString("owner");
+				ec = new EnderChest(groupname, owner, false);
+				String[] ingroup = ymlFormat.getString("ecgroup") != null ? ymlFormat.getString("ecgroup").split(",") : new String[0];
+				for (int i = 0; i < ingroup.length; i++) {
+					ec.group.add(ingroup[i]);
+				}
+				String[] invited = ymlFormat.getString("invited") != null ? ymlFormat.getString("invited").split(",") : new String[0];
+				for (int i = 0; i < invited.length; i++) {
+					ec.invited.add(invited[i]);
+				}
+				pl.ecgroup.groups.add(ec);
 			}
-			String[] invited = ymlFormat.getString("invited") != null ? ymlFormat.getString("invited").split(",") : new String[0];
-			for (int i = 0; i < invited.length; i++) {
-				ec.invited.add(invited[i]);
-			}
-			pl.ecgroup.groups.add(ec);
-		}
-		Inventory inv = pl.getServer().createInventory(null, InventoryType.ENDER_CHEST, groupname);
-		ItemLoadResult res = ItemFileManager.load(ymlFormat);
-		if (res.invalid)
+			Inventory inv = pl.getServer().createInventory(null, InventoryType.ENDER_CHEST, groupname);
+			ItemLoadResult res = ItemFileManager.load(ymlFormat);
+			if (res.invalid)
+				ItemFileManager.backup(dataFile);
+			inv.setContents(res.contents);
+			ec.setInventory(inv);
+			return true;
+		} catch (Exception e) {
+			pl.getLogger().severe("["+pl.getName()+"] Could not load "+ groupname +"!");
+			e.printStackTrace();
 			ItemFileManager.backup(dataFile);
-		inv.setContents(res.contents);
-		ec.setInventory(inv);
-		return true;
+		}
+		return false;
 	}
 
 	public boolean deleteDataFile(String groupname) {
